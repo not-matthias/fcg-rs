@@ -1,3 +1,4 @@
+use crate::anki::{AnkiConfig, AnkiDeck};
 use crate::card::Card;
 use crate::parser::{HeaderWithContent, Parser};
 use genanki_rs::{Deck, Field, Model, Note, Template};
@@ -10,7 +11,6 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use walkdir::WalkDir;
-use crate::anki::{AnkiConfig, AnkiDeck};
 
 pub mod anki;
 pub mod card;
@@ -73,7 +73,13 @@ fn main() {
     //
 
     for (deck_name, cards) in get_decks() {
-        let deck = AnkiDeck::new(AnkiConfig { deck_name: deck_name.clone(), deck_description: "Description".to_string() }, cards);
+        let deck = AnkiDeck::new(
+            AnkiConfig {
+                deck_name: deck_name.clone(),
+                deck_description: "Description".to_string(),
+            },
+            cards,
+        );
         deck.write_to_file(&format!("{}.apkg", deck_name));
     }
 }

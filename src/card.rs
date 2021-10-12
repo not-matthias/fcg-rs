@@ -13,10 +13,7 @@ pub struct Card {
 }
 
 impl Card {
-    fn header_context(
-        graph: &Graph<HeaderWithContent, usize>,
-        index: NodeIndex,
-    ) -> Vec<String> {
+    fn header_context(graph: &Graph<HeaderWithContent, usize>, index: NodeIndex) -> Vec<String> {
         let mut context_data = Vec::new();
         let mut current_index = index;
 
