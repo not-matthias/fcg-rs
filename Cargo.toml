@@ -1,0 +1,13 @@
+[package]
+name = "flashcard-generator"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+genanki-rs = "0.1.2"
+log = "0.4.14"
+simple_logger = "1.13.0"
+itertools = "0.10.1"
+petgraph = "0.6.0"
