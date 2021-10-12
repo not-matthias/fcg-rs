@@ -15,3 +15,4 @@ structopt = "0.3.23"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_yaml = "0.8.21"
 walkdir = "2.3.2"
+comrak = "0.12.1"

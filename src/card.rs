@@ -14,7 +14,7 @@ pub struct Card {
 
 impl Card {
     fn header_context(
-        graph: & Graph<HeaderWithContent, usize>,
+        graph: &Graph<HeaderWithContent, usize>,
         index: NodeIndex,
     ) -> Vec<String> {
         let mut context_data = Vec::new();
@@ -49,9 +49,12 @@ impl Card {
             .map(|c| c.replace("# ", "").replace("#", ""))
             .join(" > ");
 
+        let back = node.content.join("\n").trim().to_string();
+        let back = comrak::markdown_to_html(&back, &comrak::ComrakOptions::default());
+
         Self {
             front: format!("{} > {}", context, node.header.replace('#', "").trim()).into(),
-            back: node.content.join("\n").trim().to_string().into(),
+            back: back,
         }
     }
 }

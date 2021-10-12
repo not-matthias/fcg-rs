@@ -4,30 +4,47 @@ use crate::card::Card;
 
 pub struct AnkiConfig {
     pub(crate) deck_name: String,
-    pub(crate) deck_description: String
+    pub(crate) deck_description: String,
 }
 
 pub struct AnkiDeck {
     config: AnkiConfig,
-    cards: Vec<Card>
+    cards: Vec<Card>,
 }
 
 impl AnkiDeck {
     fn create_model() -> Model {
-       Model::new(
+        Model::new(
             1607392319,
             "Model",
-            vec![Field::new("Question"), Field::new("Answer")],
+            vec![Field::new("Front"), Field::new("Back")],
             vec![Template::new("Card 1")
-                .qfmt("{{Question}}")
-                .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
+                .qfmt(r#"
+                {{Front}}
+<p class="tags">{{Tags}}</p>
+
+<script>
+    var tagEl = document.querySelector('.tags');
+    var tags = tagEl.innerHTML.split(' ');
+    var html = '';
+    tags.forEach(function(tag) {
+	if (tag) {
+	    var newTag = '<span class="tag">' + tag + '</span>';
+           html += newTag;
+    	    tagEl.innerHTML = html;
+	}
+    });
+
+</script>
+                "#)
+                .afmt("{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}")],
         )
     }
 
     pub fn new(config: AnkiConfig, cards: Vec<Card>) -> Self {
         Self {
             config,
-            cards
+            cards,
         }
     }
 
