@@ -16,3 +16,5 @@ serde = { version = "1.0.130", features = ["derive"] }
 serde_yaml = "0.8.21"
 walkdir = "2.3.2"
 comrak = "0.12.1"
+regex = "1.5.4"
+latex2mathml = "0.2.3"

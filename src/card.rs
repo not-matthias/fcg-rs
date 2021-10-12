@@ -5,6 +5,8 @@ use petgraph::graph::NodeIndex;
 use petgraph::prelude::EdgeRef;
 use petgraph::{Direction, Graph};
 use std::borrow::Cow;
+use latex2mathml::{DisplayStyle, latex_to_mathml};
+use regex::Regex;
 
 #[derive(Debug)]
 pub struct Card {
@@ -35,6 +37,68 @@ impl Card {
         context_data
     }
 
+    fn convert_obsidian_links(back: String) -> String {
+        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L253
+
+        back
+    }
+
+    fn convert_image_links(back: String) -> String {
+        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L265
+
+        back
+    }
+
+    fn convert_audio_links(back: String) -> String {
+        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L272
+
+        back
+    }
+
+    fn convert_math(back: String) -> String {
+        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L276
+        // TODO:  Avoid compiling the same regex in a loop
+
+        let mut result = back;
+
+        let block_regex = Regex::new(r"(\$\$)(.*?)(\$\$)").unwrap();
+        // if let Some(captures) = block_regex.captures(&result) {
+        //     // result = latex2mathml::replace(&result).unwrap();
+        //
+        //     for capture in captures.iter() {
+        //         if let Some(capture) = capture {
+        //             println!("{:?}", latex2mathml::latex_to_mathml(capture.as_str(), DisplayStyle::Block))
+        //         }
+        //     }
+        // }
+        if block_regex.is_match(&*result) {
+            if let Ok(latex) = latex_to_mathml(&result, DisplayStyle::Block) {
+                result = latex;
+            } else {
+                log::warn!("Couldn't convert latex ({:?})", result);
+            }
+        }
+
+        let inline_regex = Regex::new(r"(\$)(.*?)(\$)").unwrap();
+        // if let Some(captures) = inline_regex.captures(&result) {
+        //     for capture in captures.iter() {
+        //         if let Some(capture) = capture {
+        //             let new_result = result.replace(capture.as_str(), &*latex2mathml::latex_to_mathml(capture.as_str(), DisplayStyle::Inline).unwrap());
+        //             println!("{:?}", new_result);
+        //         }
+        //     }
+        // }
+        if inline_regex.is_match(&*result) {
+            if let Ok(latex) = latex_to_mathml(&result, DisplayStyle::Inline) {
+                result = latex;
+            } else {
+                log::warn!("Couldn't convert latex ({:?})", result);
+            }
+        }
+
+        result
+    }
+
     pub fn new(graph: &Graph<HeaderWithContent, usize>, index: NodeIndex) -> Self {
         let node = graph.node_weight(index).unwrap();
         let context = Self::header_context(graph, index);
@@ -52,11 +116,11 @@ impl Card {
         // Convert to html
         //
         let back = node.content.join("\n").trim().to_string();
+        let back = Self::convert_obsidian_links(back);
+        let back = Self::convert_image_links(back);
+        let back = Self::convert_audio_links(back);
+        let back = Self::convert_math(back);
         let back = comrak::markdown_to_html(&back, &comrak::ComrakOptions::default());
-
-        // Convert latex
-        //
-
 
         Self {
             front,
