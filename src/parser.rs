@@ -125,6 +125,11 @@ impl Parser {
             log::trace!("Header: {:?}", header);
             log::trace!("Level: {:?}", level);
 
+            if !header.contains("#card") {
+                log::info!("Header is missing the #card tag.");
+                continue;
+            }
+
             let content: Vec<_> = self
                 .text
                 .lines()
