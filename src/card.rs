@@ -46,12 +46,21 @@ impl Card {
             .map(|c| c.replace("# ", "").replace("#", ""))
             .join(" > ");
 
+        let front = node.header.replace('#', "").trim().to_string();
+        let front = if context.is_empty() { front } else { format!("{} > {}", context, front) };
+
+        // Convert to html
+        //
         let back = node.content.join("\n").trim().to_string();
         let back = comrak::markdown_to_html(&back, &comrak::ComrakOptions::default());
 
+        // Convert latex
+        //
+
+
         Self {
-            front: format!("{} > {}", context, node.header.replace('#', "").trim()).into(),
-            back: back,
+            front,
+            back,
         }
     }
 }
