@@ -4,52 +4,54 @@
 //! - Extract deck name from front matter
 //! -
 
-
-
 use itertools::Itertools;
 use petgraph::graph::NodeIndex;
-use petgraph::dot::Dot;
-use petgraph::{Directed, Direction, Graph};
-use petgraph::prelude::{EdgeRef};
+use petgraph::prelude::EdgeRef;
+use petgraph::{Direction, Graph};
+use serde::Deserialize;
 
-/// The struct representing the different markdown headers.
-///
-/// Allow nested headers for context aware mode:
-/// ```
-/// Header(1) { Content, Header(2) { Content, Header(3) { Content } }, Header(2) { Content } }
-/// ```
+#[derive(Deserialize, Debug)]
+pub struct FileHeader {
+    #[serde(rename = "cards-deck")]
+    pub cards_deck: String,
+}
+
+impl Default for FileHeader {
+    fn default() -> Self {
+        Self {
+            cards_deck: "default".into(),
+        }
+    }
+}
+
+/// The struct representing a markdown header with content.
 #[derive(Debug)]
-pub struct Header<'a> {
+pub struct HeaderWithContent {
     /// The header level.
-    level: usize,
+    pub level: usize,
+
+    /// The header of the block.
+    pub header: String,
 
     /// The content of the header. This will be the back of the card.
-    content: Vec<&'a str>,
-
-    /// The parent of the current heading.
-    parent: Option<&'a Header<'a>>,
+    pub content: Vec<String>,
 }
 
-pub struct Parser<'a> {
-    text: &'a str,
+pub struct Parser {
+    text: String,
 }
 
-impl<'a> Parser<'a> {
-    pub fn new(text: &'a str) -> Self {
+impl Parser {
+    pub fn new(text: String) -> Self {
         Self { text }
     }
 
     /// Tries to find a parent index for a heading.
-    ///
-    /// Example: We need to find the correct parent for the heading 3 and heading 2.
-    /// ```
-    /// ## Heading 2
-    /// ### Heading 3
-    /// #### Heading 4
-    /// ### Heading 3
-    /// ## Heading 2
-    /// ```
-    fn find_parent_index(graph: &Graph<Header, usize>, previous_index: NodeIndex, current_level: usize) -> Option<NodeIndex> {
+    fn find_parent_index(
+        graph: &Graph<HeaderWithContent, usize>,
+        previous_index: NodeIndex,
+        current_level: usize,
+    ) -> Option<NodeIndex> {
         // We need to do the following:
         // - Check node at previous_index if it's already at the level above
         // - Go up all parents until we find the
@@ -73,19 +75,21 @@ impl<'a> Parser<'a> {
         // Find the correct parent by going up the chain
         //
         let mut current_index = previous_index;
-        while let Some(edge) = graph.edges_directed(current_index, Direction::Incoming).last() {
-            if let Some(index) = is_parent_correct(edge.source()) {
+        while let Some(edge) = graph
+            .edges_directed(current_index, Direction::Incoming)
+            .last()
+        {
+            current_index = edge.source();
+
+            if let Some(index) = is_parent_correct(current_index) {
                 return Some(index);
             }
-
-            current_index = edge.source();
         }
 
         None
     }
 
-    /// Parses the markdown document and returns a graph of headers.
-    pub fn parse(&mut self) -> Graph<Header, usize> {
+    fn parse_markdown(&mut self) -> Graph<HeaderWithContent, usize> {
         let mut graph = Graph::new();
         let mut previous_index: Option<NodeIndex> = None;
         let mut previous_level: Option<usize> = None;
@@ -98,7 +102,7 @@ impl<'a> Parser<'a> {
                 .lines()
                 .enumerate()
                 .filter_map(|(index, line)| {
-                    if line.contains("#") {
+                    if line.contains('#') {
                         Some(index)
                     } else {
                         None
@@ -132,10 +136,10 @@ impl<'a> Parser<'a> {
 
             // Create the header
             //
-            let header = Header {
+            let header = HeaderWithContent {
                 level,
-                content,
-                parent: None,
+                header: header.into(),
+                content: content.into_iter().map(|s| s.to_string()).collect(),
             };
 
             if previous_index.is_some() && previous_level.is_some() {
@@ -145,30 +149,30 @@ impl<'a> Parser<'a> {
                 //     /         \
                 //  HEADER     previous
                 // ```
-                if header.level > previous_level.unwrap()
-                {
+                if header.level > previous_level.unwrap() {
                     let node_index = graph.add_node(header);
 
-                    if let Some(parent_index) = Self::find_parent_index(&graph, previous_index.unwrap(), level) {
+                    if let Some(parent_index) =
+                        Self::find_parent_index(&graph, previous_index.unwrap(), level)
+                    {
                         graph.add_edge(parent_index, node_index, level);
-                        log::warn!("Didn't create edge")
                     }
 
                     previous_index = Some(node_index);
                     previous_level = Some(level);
                 }
-
                 // Check if the new header is an upper or equal header
                 // ```
                 //          HEADER
                 //       /         \
                 //  previous     previous
                 // ```
-                else if header.level <= previous_level.unwrap()
-                {
+                else if header.level <= previous_level.unwrap() {
                     let node_index = graph.add_node(header);
 
-                    if let Some(parent_index) = Self::find_parent_index(&graph, previous_index.unwrap(), level) {
+                    if let Some(parent_index) =
+                        Self::find_parent_index(&graph, previous_index.unwrap(), level)
+                    {
                         graph.add_edge(parent_index, node_index, level);
                     }
 
@@ -184,6 +188,40 @@ impl<'a> Parser<'a> {
         // std::fs::write("out.dot", format!("{:?}", Dot::with_config(&graph, &[])));
 
         graph
+    }
+
+    fn parse_yaml(&mut self) -> FileHeader {
+        // The only acceptable input is this:
+        // ```
+        // ---
+        // cards-deck: test
+        // ```
+        //
+        // So we have to find the last `---`:
+        //
+        let minus_indices: Vec<_> = self
+            .text
+            .lines()
+            .enumerate()
+            .filter_map(|(index, line)| {
+                if line.contains("---") {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        if let Some(last_row) = minus_indices.last() {
+            serde_yaml::from_str(&*self.text.lines().take(*last_row).join("\n")).unwrap_or_default()
+        } else {
+            Default::default()
+        }
+    }
+
+    /// Parses and returns the header and markdown content as graph.
+    pub fn parse(&mut self) -> (FileHeader, Graph<HeaderWithContent, usize>) {
+        (self.parse_yaml(), self.parse_markdown())
     }
 }
 
