@@ -1,14 +1,9 @@
 use crate::anki::{AnkiConfig, AnkiDeck};
 use crate::card::Card;
-use crate::parser::{HeaderWithContent, Parser};
-use genanki_rs::{Deck, Field, Model, Note, Template};
-use itertools::Itertools;
-use log::LevelFilter;
-use petgraph::graph::NodeIndex;
-use petgraph::{Direction, Graph};
-use simple_logger::SimpleLogger;
+use crate::parser::Parser;
+
 use std::collections::HashMap;
-use std::path::PathBuf;
+
 use structopt::StructOpt;
 use walkdir::WalkDir;
 
@@ -19,11 +14,7 @@ pub mod parser;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "basic")]
-struct Options {
-    /// Activate log output
-    #[structopt(short, long)]
-    debug: bool,
-}
+struct Options {}
 
 fn get_decks() -> HashMap<String, Vec<Card>> {
     let mut decks: HashMap<String, Vec<Card>> = HashMap::new();
@@ -62,7 +53,7 @@ fn get_decks() -> HashMap<String, Vec<Card>> {
 fn main() {
     env_logger::init();
 
-    let options = Options::from_args();
+    let _options = Options::from_args();
 
     // Convert to deck
     //

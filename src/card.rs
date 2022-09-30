@@ -1,11 +1,9 @@
 use crate::parser::HeaderWithContent;
 use itertools::Itertools;
-use petgraph::data::DataMap;
+use latex2mathml::{latex_to_mathml, DisplayStyle};
 use petgraph::graph::NodeIndex;
 use petgraph::prelude::EdgeRef;
 use petgraph::{Direction, Graph};
-use std::borrow::Cow;
-use latex2mathml::{DisplayStyle, latex_to_mathml};
 use regex::Regex;
 
 #[derive(Debug)]
@@ -111,7 +109,11 @@ impl Card {
             .join(" > ");
 
         let front = node.header.replace('#', "").trim().to_string();
-        let front = if context.is_empty() { front } else { format!("{} > {}", context, front) };
+        let front = if context.is_empty() {
+            front
+        } else {
+            format!("{} > {}", context, front)
+        };
 
         // Convert to html
         //
@@ -122,9 +124,6 @@ impl Card {
         let back = Self::convert_math(back);
         let back = comrak::markdown_to_html(&back, &comrak::ComrakOptions::default());
 
-        Self {
-            front,
-            back,
-        }
+        Self { front, back }
     }
 }

@@ -1,6 +1,5 @@
 use crate::card::Card;
 use genanki_rs::{Deck, Field, Model, Note, Template};
-use std::path::PathBuf;
 
 pub struct AnkiConfig {
     pub(crate) deck_name: String,
