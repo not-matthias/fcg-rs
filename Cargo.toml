@@ -6,15 +6,15 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-genanki-rs = "0.1.2"
-log = "0.4.14"
-simple_logger = "1.13.0"
-itertools = "0.10.1"
-petgraph = "0.6.0"
-structopt = "0.3.23"
-serde = { version = "1.0.130", features = ["derive"] }
-serde_yaml = "0.8.21"
+genanki-rs = "0.3.0"
+log = "0.4.17"
+itertools = "0.10.5"
+petgraph = "0.6.2"
+structopt = "0.3.26"
+serde = { version = "1.0.145", features = ["derive"] }
+serde_yaml = "0.9.13"
 walkdir = "2.3.2"
-comrak = "0.12.1"
-regex = "1.5.4"
+comrak = "0.14.0"
+regex = "1.6.0"
 latex2mathml = "0.2.3"
+env_logger = "0.9.1"

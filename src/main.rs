@@ -60,14 +60,9 @@ fn get_decks() -> HashMap<String, Vec<Card>> {
 }
 
 fn main() {
-    let options = Options::from_args();
+    env_logger::init();
 
-    if options.debug {
-        SimpleLogger::new()
-            .with_level(LevelFilter::Info)
-            .init()
-            .unwrap();
-    }
+    let options = Options::from_args();
 
     // Convert to deck
     //
