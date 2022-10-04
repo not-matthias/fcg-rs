@@ -80,9 +80,9 @@ impl Card {
     fn convert_math(back: String) -> String {
         let result = back;
         let result =
-            LATEX_BLOCK_REGEX.replace(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
+            LATEX_BLOCK_REGEX.replace_all(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
         let result = LATEX_INLINE_REGEX
-            .replace(&result, |caps: &Captures| format!("\\\\({}\\\\)", &caps[2]));
+            .replace_all(&result, |caps: &Captures| format!("\\\\({}\\\\)", &caps[2]));
 
         result.to_string()
     }
@@ -112,6 +112,9 @@ impl Card {
 
     pub fn new(graph: &CardGraph, index: NodeIndex) -> Self {
         let (front, back) = Self::card_from_graph(graph, index);
+
+        let front = Self::convert_image_links(front);
+        let front = Self::convert_math(front);
 
         let back = Self::convert_image_links(back);
         let back = Self::convert_math(back);
