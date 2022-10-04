@@ -2,7 +2,7 @@
 cards-deck: latex-test
 ---
 
-## This is a question #card
+## This is a question
 
 $E = m c^2$ is the most famous equation derived by Einstein.
 In fact, this relation is a spacial case of the equation

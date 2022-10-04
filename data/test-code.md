@@ -2,7 +2,7 @@
 cards-deck: code-test
 ---
 
-## Testing whether the code works #card
+## Testing whether the code works
 
 ```rust
 fn main() {

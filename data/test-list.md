@@ -2,7 +2,7 @@
 cards-deck: list-test
 ---
 
-## This is a question #card
+## This is a question
 
 - Item 1
 - Item 2
