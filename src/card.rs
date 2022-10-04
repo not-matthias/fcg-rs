@@ -1,9 +1,23 @@
-use crate::parser::HeaderWithContent;
+use comrak::{ComrakExtensionOptions, ComrakOptions, ComrakParseOptions, ComrakRenderOptions};
+use image::ImageOutputFormat;
+use std::io::Cursor;
+use std::path::PathBuf;
+
+use crate::parser::CardGraph;
+use crate::RESOURCES_PATH;
 use itertools::Itertools;
 use petgraph::graph::NodeIndex;
 use petgraph::prelude::EdgeRef;
-use petgraph::{Direction, Graph};
+use petgraph::Direction;
 use regex::{Captures, Regex};
+
+// Credits to https://github.com/reuseman/flashcards-obsidian/blob/main/src/conf/regex.ts
+lazy_static::lazy_static! {
+    static ref OBSIDIAN_IMAGE_LINK : Regex = Regex::new(r#"!\[\[(.*\.(?:png|jpg|jpeg|gif|bmp|svg|tiff)).*?\]\]"#).unwrap();
+    static ref MARKDOWN_IMAGE_LINK : Regex = Regex::new(r#"!\[\]\((.*\.(?:png|jpg|jpeg|gif|bmp|svg|tiff)).*?\)"#).unwrap();
+    static ref LATEX_BLOCK_REGEX : Regex = Regex::new(r"(\$\$)(.*?)(\$\$)").unwrap();
+    static ref LATEX_INLINE_REGEX : Regex = Regex::new(r"(\$)(.*?)(\$)").unwrap();
+}
 
 #[derive(Debug)]
 pub struct Card {
@@ -12,7 +26,7 @@ pub struct Card {
 }
 
 impl Card {
-    fn header_context(graph: &Graph<HeaderWithContent, usize>, index: NodeIndex) -> Vec<String> {
+    fn header_context(graph: &CardGraph, index: NodeIndex) -> Vec<String> {
         let mut context_data = Vec::new();
         let mut current_index = index;
 
@@ -34,33 +48,46 @@ impl Card {
         context_data
     }
 
-    fn convert_obsidian_links(back: String) -> String {
-        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L253
+    fn image_to_base64(path: PathBuf) -> String {
+        let image = image::open(path).unwrap();
 
-        back
+        let mut data: Vec<u8> = Vec::new();
+        let mut cursor = Cursor::new(&mut data);
+        image.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
+
+        let base64 = base64::encode(data);
+        format!("<img src='data:image/png;base64,{}'>", base64)
     }
 
     fn convert_image_links(back: String) -> String {
-        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L265
+        let replacer = |caps: &Captures| {
+            let path = RESOURCES_PATH.get().unwrap().join(&caps[1]);
+            if !path.exists() {
+                log::warn!("{} not found.", path.display());
+                return format!("Image not found");
+            }
 
-        back
-    }
+            Self::image_to_base64(path)
+        };
 
-    fn convert_math(back: String) -> String {
         let result = back;
-
-        let block_regex = Regex::new(r"(\$\$)(.*?)(\$\$)").unwrap();
-        let inline_regex = Regex::new(r"(\$)(.*?)(\$)").unwrap();
-
-        let result =
-            block_regex.replace(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
-        let result =
-            inline_regex.replace(&result, |caps: &Captures| format!("\\\\({}\\\\)", &caps[2]));
+        let result = OBSIDIAN_IMAGE_LINK.replace_all(&result, replacer);
+        let result = MARKDOWN_IMAGE_LINK.replace_all(&result, replacer);
 
         result.to_string()
     }
 
-    pub fn new(graph: &Graph<HeaderWithContent, usize>, index: NodeIndex) -> Self {
+    fn convert_math(back: String) -> String {
+        let result = back;
+        let result =
+            LATEX_BLOCK_REGEX.replace(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
+        let result = LATEX_INLINE_REGEX
+            .replace(&result, |caps: &Captures| format!("\\\\({}\\\\)", &caps[2]));
+
+        result.to_string()
+    }
+
+    fn card_from_graph(graph: &CardGraph, index: NodeIndex) -> (String, String) {
         let node = graph.node_weight(index).unwrap();
         let context = Self::header_context(graph, index);
 
@@ -78,13 +105,34 @@ impl Card {
             format!("{} > {}", context, front)
         };
 
-        // Convert to html
-        //
         let back = node.content.join("\n").trim().to_string();
-        let back = Self::convert_obsidian_links(back);
+
+        (front, back)
+    }
+
+    pub fn new(graph: &CardGraph, index: NodeIndex) -> Self {
+        let (front, back) = Self::card_from_graph(graph, index);
+
         let back = Self::convert_image_links(back);
         let back = Self::convert_math(back);
-        let back = comrak::markdown_to_html(&back, &comrak::ComrakOptions::default());
+
+        let options = ComrakOptions {
+            extension: ComrakExtensionOptions {
+                strikethrough: true,
+                table: true,
+                autolink: true,
+                tagfilter: true,
+                tasklist: true,
+                superscript: true,
+                ..ComrakExtensionOptions::default()
+            },
+            parse: ComrakParseOptions::default(),
+            render: ComrakRenderOptions {
+                unsafe_: true,
+                ..ComrakRenderOptions::default()
+            },
+        };
+        let back = comrak::markdown_to_html(&back, &options);
 
         Self { front, back }
     }
@@ -93,6 +141,16 @@ impl Card {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_convert_obsidian_embeds() {
+        RESOURCES_PATH.set(PathBuf::from("./data")).unwrap();
+
+        let input = include_str!("../data/test-obsidian.md").to_string();
+        let converted = Card::convert_image_links(input);
+
+        insta::assert_display_snapshot!(converted);
+    }
 
     #[test]
     fn test_convert_math() {

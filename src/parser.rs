@@ -4,6 +4,8 @@ use petgraph::prelude::EdgeRef;
 use petgraph::{Direction, Graph};
 use serde::Deserialize;
 
+pub type CardGraph = Graph<HeaderWithContent, usize>;
+
 #[derive(Deserialize, Debug)]
 pub struct FileHeader {
     #[serde(rename = "cards-deck")]
@@ -42,7 +44,7 @@ impl Parser {
 
     /// Tries to find a parent index for a heading.
     fn find_parent_index(
-        graph: &Graph<HeaderWithContent, usize>,
+        graph: &CardGraph,
         previous_index: NodeIndex,
         current_level: usize,
     ) -> Option<NodeIndex> {
@@ -83,7 +85,7 @@ impl Parser {
         None
     }
 
-    fn parse_markdown(&mut self) -> Graph<HeaderWithContent, usize> {
+    pub fn parse_markdown(&mut self) -> CardGraph {
         let mut graph = Graph::new();
         let mut previous_index: Option<NodeIndex> = None;
         let mut previous_level: Option<usize> = None;
@@ -181,12 +183,10 @@ impl Parser {
             }
         }
 
-        // std::fs::write("out.dot", format!("{:?}", Dot::with_config(&graph, &[])));
-
         graph
     }
 
-    fn parse_yaml(&mut self) -> FileHeader {
+    pub fn parse_yaml(&mut self) -> FileHeader {
         // The only acceptable input is this:
         // ```
         // ---
@@ -213,11 +213,6 @@ impl Parser {
         } else {
             Default::default()
         }
-    }
-
-    /// Parses and returns the header and markdown content as graph.
-    pub fn parse(&mut self) -> (FileHeader, Graph<HeaderWithContent, usize>) {
-        (self.parse_yaml(), self.parse_markdown())
     }
 }
 
