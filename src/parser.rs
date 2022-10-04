@@ -123,7 +123,6 @@ impl Parser {
                 .lines()
                 .take(next_index)
                 .skip(index)
-                .filter(|s| !s.is_empty())
                 .skip(1) // Skip header
                 .collect::<Vec<_>>();
             if content.is_empty() {
