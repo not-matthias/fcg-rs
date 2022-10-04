@@ -46,20 +46,16 @@ impl Card {
         back
     }
 
-    fn convert_audio_links(back: String) -> String {
-        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L272
-
-        back
-    }
-
     fn convert_math(back: String) -> String {
         let result = back;
 
         let block_regex = Regex::new(r"(\$\$)(.*?)(\$\$)").unwrap();
         let inline_regex = Regex::new(r"(\$)(.*?)(\$)").unwrap();
 
-        let result = block_regex.replace(&result, |caps: &Captures| format!("\\[{}\\]", &caps[2]));
-        let result = inline_regex.replace(&result, |caps: &Captures| format!("\\({}\\)", &caps[2]));
+        let result =
+            block_regex.replace(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
+        let result =
+            inline_regex.replace(&result, |caps: &Captures| format!("\\\\({}\\\\)", &caps[2]));
 
         result.to_string()
     }
@@ -87,7 +83,6 @@ impl Card {
         let back = node.content.join("\n").trim().to_string();
         let back = Self::convert_obsidian_links(back);
         let back = Self::convert_image_links(back);
-        let back = Self::convert_audio_links(back);
         let back = Self::convert_math(back);
         let back = comrak::markdown_to_html(&back, &comrak::ComrakOptions::default());
 
