@@ -1,1 +1,2 @@
-# **F**lash**c**ard **G**enerator
+# fcg-rs
+**F**lash**c**ards **G**enerator
