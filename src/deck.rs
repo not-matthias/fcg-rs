@@ -32,20 +32,19 @@ impl Deck {
 }
 
 impl Deck {
-    fn str_to_id(string: &str) -> u64 {
+    fn str_to_id(string: &str) -> usize {
         let mut hasher = DefaultHasher::new();
         string.hash(&mut hasher);
-        hasher.finish()
+        (hasher.finish() % u32::MAX as u64) as usize
     }
 
     fn card_model(card: &Card) -> Model {
-        // let id = Self::str_to_id(&card.front) as usize;
         let template = Template::new("Card")
             .qfmt("{{Front}}")
             .afmt("{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}");
 
         Model::new(
-            42,
+            Self::str_to_id(&card.front),
             "Model",
             vec![Field::new("Front"), Field::new("Back")],
             vec![template],
@@ -56,7 +55,7 @@ impl Deck {
     /// Saves the current deck to disk.
     pub fn save(self, file: &str) {
         let mut deck = anki::Deck::new(
-            Self::str_to_id(&self.name) as usize,
+            Self::str_to_id(&self.name),
             &self.name,
             "No description available",
         );
