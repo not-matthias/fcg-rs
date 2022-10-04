@@ -1,1 +1,1 @@
-# flashcard-generator-rs
+# **F**lash**c**ard **G**enerator
