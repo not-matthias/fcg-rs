@@ -38,5 +38,7 @@ fn main() {
     //
     let file = std::fs::read_to_string(&options.file).unwrap();
     let deck = Deck::new(&file);
-    deck.save("obsidian-test.apkg");
+
+    let name = format!("{}.apkg", deck.name);
+    deck.save(&name);
 }
