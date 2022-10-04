@@ -147,6 +147,7 @@ impl Parser {
                 //     /         \
                 //  HEADER     previous
                 // ```
+                #[allow(clippy::if_same_then_else)]
                 if header.level > previous_level.unwrap() {
                     let node_index = graph.add_node(header);
 
