@@ -9,7 +9,6 @@ use walkdir::WalkDir;
 
 pub mod anki;
 pub mod card;
-pub mod config;
 pub mod parser;
 
 #[derive(StructOpt, Debug)]

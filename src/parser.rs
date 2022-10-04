@@ -1,9 +1,3 @@
-//! Parses the markdown files to find flashcards.
-//!
-//! This parser does the following:
-//! - Extract deck name from front matter
-//! -
-
 use itertools::Itertools;
 use petgraph::graph::NodeIndex;
 use petgraph::prelude::EdgeRef;
@@ -122,21 +116,19 @@ impl Parser {
         for (index, next_index) in header_indices.into_iter().tuple_windows() {
             let header = self.text.lines().nth(index).unwrap_or_default();
             let level = header.chars().filter(|c| c.eq(&'#')).count();
-            log::trace!("Header: {:?}", header);
-            log::trace!("Level: {:?}", level);
+            log::trace!("Header {:?} with level {:?}", header, level);
 
-            if !header.contains("#card") {
-                log::info!("Header is missing the #card tag.");
-                continue;
-            }
-
-            let content: Vec<_> = self
+            let content = self
                 .text
                 .lines()
                 .take(next_index)
                 .skip(index)
-                .skip(1)
-                .collect();
+                .filter(|s| !s.is_empty())
+                .skip(1) // Skip header
+                .collect::<Vec<_>>();
+            if content.is_empty() {
+                continue;
+            }
             log::trace!("Content: {:?}", content);
 
             // Create the header
@@ -233,19 +225,22 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use log::LevelFilter;
-    use simple_logger::SimpleLogger;
 
     #[test]
-    fn parse_test_1() {
-        SimpleLogger::new()
-            .with_level(LevelFilter::Trace)
-            .init()
-            .unwrap();
+    fn parse_markdown() {
+        let content = include_str!("../data/test-markdown.md").to_string();
+        let mut parser = Parser::new(content);
+        let content = parser.parse_markdown();
 
-        let mut parser = Parser::new(include_str!("../data/test_graph.md"));
-        let headers = parser.parse();
+        insta::assert_debug_snapshot!(content);
+    }
 
-        println!("{:?}", headers);
+    #[test]
+    fn parse_yaml() {
+        let content = "---\ncards-deck: deck-name\n---".to_string();
+        let mut parser = Parser::new(content);
+        let content = parser.parse_yaml();
+
+        insta::assert_debug_snapshot!(content);
     }
 }
