@@ -4,6 +4,7 @@ cards-deck: latex-test
 
 ## This is a question #card
 
-$$\top$$
-
-$K$
+$E = m c^2$ is the most famous equation derived by Einstein.
+In fact, this relation is a spacial case of the equation
+$$E = \sqrt{ m^2 c^4 + p^2 c^2 } ,$$
+which describes the relation between energy and momentum.

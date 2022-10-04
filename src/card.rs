@@ -1,10 +1,9 @@
 use crate::parser::HeaderWithContent;
 use itertools::Itertools;
-use latex2mathml::{latex_to_mathml, DisplayStyle};
 use petgraph::graph::NodeIndex;
 use petgraph::prelude::EdgeRef;
 use petgraph::{Direction, Graph};
-use regex::Regex;
+use regex::{Captures, Regex};
 
 #[derive(Debug)]
 pub struct Card {
@@ -54,47 +53,15 @@ impl Card {
     }
 
     fn convert_math(back: String) -> String {
-        // TODO: https://github.com/reuseman/flashcards-obsidian/blob/main/src/services/parser.ts#L276
-        // TODO:  Avoid compiling the same regex in a loop
-
-        let mut result = back;
+        let result = back;
 
         let block_regex = Regex::new(r"(\$\$)(.*?)(\$\$)").unwrap();
-        // if let Some(captures) = block_regex.captures(&result) {
-        //     // result = latex2mathml::replace(&result).unwrap();
-        //
-        //     for capture in captures.iter() {
-        //         if let Some(capture) = capture {
-        //             println!("{:?}", latex2mathml::latex_to_mathml(capture.as_str(), DisplayStyle::Block))
-        //         }
-        //     }
-        // }
-        if block_regex.is_match(&*result) {
-            if let Ok(latex) = latex_to_mathml(&result, DisplayStyle::Block) {
-                result = latex;
-            } else {
-                log::warn!("Couldn't convert latex ({:?})", result);
-            }
-        }
-
         let inline_regex = Regex::new(r"(\$)(.*?)(\$)").unwrap();
-        // if let Some(captures) = inline_regex.captures(&result) {
-        //     for capture in captures.iter() {
-        //         if let Some(capture) = capture {
-        //             let new_result = result.replace(capture.as_str(), &*latex2mathml::latex_to_mathml(capture.as_str(), DisplayStyle::Inline).unwrap());
-        //             println!("{:?}", new_result);
-        //         }
-        //     }
-        // }
-        if inline_regex.is_match(&*result) {
-            if let Ok(latex) = latex_to_mathml(&result, DisplayStyle::Inline) {
-                result = latex;
-            } else {
-                log::warn!("Couldn't convert latex ({:?})", result);
-            }
-        }
 
-        result
+        let result = block_regex.replace(&result, |caps: &Captures| format!("\\[{}\\]", &caps[2]));
+        let result = inline_regex.replace(&result, |caps: &Captures| format!("\\({}\\)", &caps[2]));
+
+        result.to_string()
     }
 
     pub fn new(graph: &Graph<HeaderWithContent, usize>, index: NodeIndex) -> Self {
@@ -125,5 +92,22 @@ impl Card {
         let back = comrak::markdown_to_html(&back, &comrak::ComrakOptions::default());
 
         Self { front, back }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_convert_math() {
+        let input = r#"$E = m c^2$ is the most famous equation derived by Einstein.
+        In fact, this relation is a spacial case of the equation
+        $$E = \sqrt{ m^2 c^4 + p^2 c^2 } ,$$
+        which describes the relation between energy and momentum."#
+            .to_string();
+        let converted = Card::convert_math(input);
+
+        insta::assert_display_snapshot!(converted);
     }
 }

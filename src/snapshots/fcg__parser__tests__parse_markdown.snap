@@ -12,36 +12,47 @@ Graph {
             level: 2,
             header: "## Header 2",
             content: [
+                "",
                 "Text 1",
+                "",
             ],
         },
         1: HeaderWithContent {
             level: 5,
             header: "##### Header 5",
             content: [
+                "",
                 "Text 2",
+                "",
             ],
         },
         2: HeaderWithContent {
             level: 3,
             header: "### Header 3",
             content: [
+                "",
                 "Text 3",
+                "",
                 "---",
+                "",
             ],
         },
         3: HeaderWithContent {
             level: 1,
             header: "# H1",
             content: [
+                "",
                 "A",
+                "",
             ],
         },
         4: HeaderWithContent {
             level: 2,
             header: "## H2",
             content: [
+                "",
                 "B",
+                "",
             ],
         },
         5: HeaderWithContent {
@@ -84,6 +95,7 @@ Graph {
             header: "#### H4",
             content: [
                 "Content",
+                "",
             ],
         },
         11: HeaderWithContent {
