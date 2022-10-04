@@ -3,7 +3,6 @@ use std::path::PathBuf;
 
 use deck::Deck;
 use structopt::StructOpt;
-use walkdir::WalkDir;
 
 pub mod card;
 pub mod deck;
@@ -21,22 +20,6 @@ struct Options {
     /// Path to the markdown file to convert.
     #[structopt(short, long, parse(from_os_str))]
     file: PathBuf,
-}
-
-fn get_decks() -> Vec<Deck> {
-    let mut decks: Vec<Deck> = Vec::new();
-
-    for entry in WalkDir::new(".").into_iter().filter_map(|e| e.ok()) {
-        let name = entry.file_name().to_str().unwrap_or_default();
-
-        if name.ends_with(".md") {
-            let content = std::fs::read_to_string(entry.path()).unwrap();
-
-            decks.push(Deck::new(&content))
-        }
-    }
-
-    decks
 }
 
 fn main() {

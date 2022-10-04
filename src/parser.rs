@@ -209,7 +209,7 @@ impl Parser {
             .collect();
 
         if let Some(last_row) = minus_indices.last() {
-            serde_yaml::from_str(&*self.text.lines().take(*last_row).join("\n")).unwrap_or_default()
+            serde_yaml::from_str(&self.text.lines().take(*last_row).join("\n")).unwrap_or_default()
         } else {
             Default::default()
         }

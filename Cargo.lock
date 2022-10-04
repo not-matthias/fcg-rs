@@ -486,7 +486,6 @@ dependencies = [
  "serde",
  "serde_yaml",
  "structopt",
- "walkdir",
 ]
 
 [[package]]

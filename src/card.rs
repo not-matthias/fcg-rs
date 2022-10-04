@@ -37,7 +37,7 @@ impl Card {
             current_index = edge.source();
 
             if let Some(context) = graph.node_weight(current_index).map(|h| h.header.clone()) {
-                context_data.push(context.into());
+                context_data.push(context);
             }
         }
 
@@ -64,7 +64,7 @@ impl Card {
             let path = RESOURCES_PATH.get().unwrap().join(&caps[1]);
             if !path.exists() {
                 log::warn!("{} not found.", path.display());
-                return format!("Image not found");
+                return "Image not found".to_string();
             }
 
             Self::image_to_base64(path)
@@ -95,7 +95,7 @@ impl Card {
         //
         let context = context
             .into_iter()
-            .map(|c| c.replace("# ", "").replace("#", ""))
+            .map(|c| c.replace("# ", "").replace('#', ""))
             .join(" > ");
 
         let front = node.header.replace('#', "").trim().to_string();
