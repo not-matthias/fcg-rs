@@ -8,4 +8,4 @@ RUN cargo install --path .
 # Run the project
 FROM debian:bullseye-slim
 COPY --from=builder /usr/local/cargo/bin/fcg /usr/local/bin/app
-ENTRYPOINT ["/usr/local/bin/daemon"]
+ENTRYPOINT ["/usr/local/bin/app"]
