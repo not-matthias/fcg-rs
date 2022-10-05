@@ -18,6 +18,7 @@ lazy_static = "1.4.0"
 once_cell = { version = "1.15.0", features = ["unstable"] }
 image = "0.24.4"
 base64 = "0.13.0"
+walkdir = "2.3.2"
 
 [dev-dependencies]
 insta = { version = "1.21.0", features = ["json", "yaml"] }

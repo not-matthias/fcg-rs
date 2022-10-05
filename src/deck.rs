@@ -29,6 +29,10 @@ impl Deck {
             cards,
         }
     }
+
+    pub fn combine(&mut self, other: Deck) {
+        self.cards.extend(other.cards);
+    }
 }
 
 impl Deck {

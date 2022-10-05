@@ -1,8 +1,10 @@
 use once_cell::sync::OnceCell;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use deck::Deck;
 use structopt::StructOpt;
+use walkdir::WalkDir;
 
 pub mod card;
 pub mod deck;
@@ -18,8 +20,12 @@ struct Options {
     resources: Option<PathBuf>,
 
     /// Path to the markdown file to convert.
-    #[structopt(short, long, parse(from_os_str))]
-    file: PathBuf,
+    #[structopt(long, parse(from_os_str))]
+    file: Option<PathBuf>,
+
+    /// Path to the folder of which all files will be converted.
+    #[structopt(long, parse(from_os_str))]
+    folder: Option<PathBuf>,
 
     /// Path to the output directory. If not specified, the file will be saved to the current directory.
     #[structopt(short, long = "out_dir", parse(from_os_str))]
@@ -41,13 +47,43 @@ fn main() {
     RESOURCES_PATH.set(resources).unwrap();
     log::info!("Using resources path: {:?}", RESOURCES_PATH.get().unwrap());
 
-    // Convert file to deck
+    // Set input folder path
     //
-    let file = std::fs::read_to_string(&options.file).unwrap();
-    let deck = Deck::new(&file);
+    let folder = options.folder.unwrap_or_else(|| PathBuf::from("."));
+    log::info!("Fetching files from: {:?}", folder);
 
+    // Iterate over all markdown files in the folder
+    //
+    let mut decks = HashMap::<String, Deck>::new();
+    for entry in WalkDir::new(folder).into_iter().filter_map(|e| e.ok()) {
+        let name = entry.file_name().to_str().unwrap_or_default();
+
+        // CHeck if we should only convert a single file
+        if let Some(file) = options.file.as_ref() {
+            if name != file.file_name().unwrap().to_str().unwrap() {
+                continue;
+            }
+        }
+
+        // Check if the file is a markdown file which can be converted
+        if name.ends_with(".md") {
+            let content = std::fs::read_to_string(entry.path()).unwrap();
+            let deck = Deck::new(&content);
+
+            if decks.contains_key(&deck.name) {
+                decks.get_mut(&deck.name).unwrap().combine(deck);
+            } else {
+                decks.insert(deck.name.clone(), deck);
+            }
+        }
+    }
+
+    // Save the decks to disk
+    //
     let output_dir: PathBuf = options.output_dir.unwrap_or_else(|| PathBuf::from("."));
-    let output_file = output_dir.join(format!("{}.apkg", deck.name));
 
-    deck.save(output_file.to_str().unwrap());
+    for (name, deck) in decks {
+        let output_file = output_dir.join(format!("{}.apkg", name));
+        deck.save(output_file.to_str().unwrap());
+    }
 }
