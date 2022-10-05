@@ -79,8 +79,8 @@ impl Card {
 
     fn convert_math(back: String) -> String {
         let result = back;
-        let result =
-            LATEX_BLOCK_REGEX.replace_all(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
+        let result = LATEX_BLOCK_REGEX
+            .replace_all(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
         let result = LATEX_INLINE_REGEX
             .replace_all(&result, |caps: &Captures| format!("\\\\({}\\\\)", &caps[2]));
 
