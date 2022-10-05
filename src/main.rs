@@ -33,7 +33,7 @@ fn main() {
 
     // Set resources path
     //
-    let resources = options.resources.unwrap_or(PathBuf::from("."));
+    let resources = options.resources.unwrap_or_else(|| PathBuf::from("."));
     if !resources.exists() {
         log::error!("Resources path doesn't exist");
         return;
@@ -46,7 +46,7 @@ fn main() {
     let file = std::fs::read_to_string(&options.file).unwrap();
     let deck = Deck::new(&file);
 
-    let output_dir: PathBuf = options.output_dir.unwrap_or(PathBuf::from("."));
+    let output_dir: PathBuf = options.output_dir.unwrap_or_else(|| PathBuf::from("."));
     let output_file = output_dir.join(format!("{}.apkg", deck.name));
 
     deck.save(output_file.to_str().unwrap());
