@@ -20,6 +20,10 @@ struct Options {
     /// Path to the markdown file to convert.
     #[structopt(short, long, parse(from_os_str))]
     file: PathBuf,
+
+    /// Path to the output directory. If not specified, the file will be saved to the current directory.
+    #[structopt(short, long = "out_dir", parse(from_os_str))]
+    output_dir: Option<PathBuf>,
 }
 
 fn main() {
@@ -42,6 +46,8 @@ fn main() {
     let file = std::fs::read_to_string(&options.file).unwrap();
     let deck = Deck::new(&file);
 
-    let name = format!("{}.apkg", deck.name);
-    deck.save(&name);
+    let output_dir: PathBuf = options.output_dir.unwrap_or(PathBuf::from("."));
+    let output_file = output_dir.join(format!("{}.apkg", deck.name));
+
+    deck.save(output_file.to_str().unwrap());
 }

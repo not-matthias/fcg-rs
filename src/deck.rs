@@ -53,7 +53,7 @@ impl Deck {
     }
 
     /// Saves the current deck to disk.
-    pub fn save(self, file: &str) {
+    pub fn save(self, file_path: &str) {
         let mut deck = anki::Deck::new(
             Self::str_to_id(&self.name),
             &self.name,
@@ -70,6 +70,7 @@ impl Deck {
             deck.add_note(note);
         }
 
-        deck.write_to_file(file).unwrap();
+        log::info!("Saving deck to {}", file_path);
+        deck.write_to_file(file_path).unwrap();
     }
 }
