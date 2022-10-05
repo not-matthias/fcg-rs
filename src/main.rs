@@ -15,7 +15,7 @@ pub static RESOURCES_PATH: OnceCell<PathBuf> = OnceCell::new();
 struct Options {
     /// Path to the resources folder where the images are stored.
     #[structopt(short, long, parse(from_os_str))]
-    resources: PathBuf,
+    resources: Option<PathBuf>,
 
     /// Path to the markdown file to convert.
     #[structopt(short, long, parse(from_os_str))]
@@ -28,11 +28,14 @@ fn main() {
     let options = Options::from_args();
 
     // Set resources path
-    if !options.resources.exists() {
+    //
+    let resources = options.resources.unwrap_or(PathBuf::from("."));
+    if !resources.exists() {
         log::error!("Resources path doesn't exist");
         return;
     }
-    RESOURCES_PATH.set(options.resources).unwrap();
+    RESOURCES_PATH.set(resources).unwrap();
+    log::info!("Using resources path: {:?}", RESOURCES_PATH.get().unwrap());
 
     // Convert file to deck
     //
