@@ -127,7 +127,7 @@ impl Parser {
                 .skip(index)
                 .skip(1) // Skip header
                 .collect::<Vec<_>>();
-            if content.is_empty() {
+            if content.iter().all(|s| s.is_empty()) {
                 continue;
             }
             log::trace!("Content: {:?}", content);
