@@ -126,7 +126,7 @@ impl Card {
                 autolink: true,
                 tagfilter: true,
                 tasklist: true,
-                superscript: true,
+                superscript: false,
                 ..ComrakExtensionOptions::default()
             },
             parse: ComrakParseOptions::default(),
