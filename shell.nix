@@ -5,4 +5,5 @@
     ];
     RUSTC_VERSION = pkgs.lib.readFile ./rust-toolchain;
     HISTFILE = toString ./.history;
+    RUST_LOG="trace";
   }
