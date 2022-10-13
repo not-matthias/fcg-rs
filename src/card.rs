@@ -79,10 +79,10 @@ impl Card {
 
     fn convert_math(back: String) -> String {
         let result = back;
-        let result = LATEX_BLOCK_REGEX
-            .replace_all(&result, |caps: &Captures| format!("\\\\[{}\\\\]", &caps[2]));
+        let result =
+            LATEX_BLOCK_REGEX.replace_all(&result, |caps: &Captures| format!("\\[{}\\]", &caps[2]));
         let result = LATEX_INLINE_REGEX
-            .replace_all(&result, |caps: &Captures| format!("\\\\({}\\\\)", &caps[2]));
+            .replace_all(&result, |caps: &Captures| format!("\\({}\\)", &caps[2]));
 
         result.to_string()
     }
@@ -119,23 +119,15 @@ impl Card {
         let back = Self::convert_image_links(back);
         let back = Self::convert_math(back);
 
-        let options = ComrakOptions {
-            extension: ComrakExtensionOptions {
-                strikethrough: true,
-                table: true,
-                autolink: true,
-                tagfilter: true,
-                tasklist: true,
-                superscript: false,
-                ..ComrakExtensionOptions::default()
-            },
-            parse: ComrakParseOptions::default(),
-            render: ComrakRenderOptions {
-                unsafe_: true,
-                ..ComrakRenderOptions::default()
-            },
-        };
-        let back = comrak::markdown_to_html(&back, &options);
+        // let options = ComrakOptions {
+        //     extension: ComrakExtensionOptions::default(),
+        //     parse: ComrakParseOptions::default(),
+        //     render: ComrakRenderOptions {
+        //         unsafe_: true,
+        //         ..ComrakRenderOptions::default()
+        //     },
+        // };
+        // let back = comrak::markdown_to_html(&back, &options);
 
         Self { front, back }
     }
@@ -165,5 +157,17 @@ mod tests {
         let converted = Card::convert_math(input);
 
         insta::assert_display_snapshot!(converted);
+    }
+
+    #[test]
+    fn test_asdf() {
+        let input = r#"
+        ### Wie kann man von $\mathbb R ^{\mathbb N}$ ausgehend einen Vektorraum konstruieren?"#
+            .to_string();
+        let converted = Card::convert_math(input);
+
+        println!("{}", converted);
+
+        assert!(false);
     }
 }
