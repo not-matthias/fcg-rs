@@ -1,4 +1,3 @@
-use comrak::{ComrakExtensionOptions, ComrakOptions, ComrakParseOptions, ComrakRenderOptions};
 use image::ImageOutputFormat;
 use std::io::Cursor;
 use std::path::PathBuf;
@@ -17,6 +16,7 @@ lazy_static::lazy_static! {
     static ref MARKDOWN_IMAGE_LINK : Regex = Regex::new(r#"!\[\]\((.*\.(?:png|jpg|jpeg|gif|bmp|svg|tiff)).*?\)"#).unwrap();
     static ref LATEX_BLOCK_REGEX : Regex = Regex::new(r"(\$\$)(.*?)(\$\$)").unwrap();
     static ref LATEX_INLINE_REGEX : Regex = Regex::new(r"(\$)(.*?)(\$)").unwrap();
+    static ref OBSIDIAN_LINK : Regex = Regex::new(r"(\[\[)(.*?)(\]\])").unwrap();
 }
 
 #[derive(Debug)]
@@ -57,6 +57,16 @@ impl Card {
 
         let base64 = base64::encode(data);
         format!("<img src='data:image/png;base64,{}'>", base64)
+    }
+
+    /// Converts Obsidian Links (e.g. `[[Term]]`) into normal text (e.g. `Term`).
+    fn convert_obsidian_links(text: String) -> String {
+
+        let result = OBSIDIAN_LINK.replace_all(&text,  |caps: &Captures| {
+            format!("{}", &caps[2])
+        });
+
+        result.to_string()
     }
 
     fn convert_image_links(back: String) -> String {
@@ -113,9 +123,11 @@ impl Card {
     pub fn new(graph: &CardGraph, index: NodeIndex) -> Self {
         let (front, back) = Self::card_from_graph(graph, index);
 
+        let front = Self::convert_obsidian_links(front);
         let front = Self::convert_image_links(front);
         let front = Self::convert_math(front);
 
+        let back = Self::convert_obsidian_links(back);
         let back = Self::convert_image_links(back);
         let back = Self::convert_math(back);
 
@@ -136,6 +148,14 @@ impl Card {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_convert_obsidian_link() {
+        let input = "this is a [[term]].".to_string();
+        let converted = Card::convert_obsidian_links(input);
+
+        insta::assert_display_snapshot!(converted);
+    }
 
     #[test]
     fn test_convert_obsidian_embeds() {

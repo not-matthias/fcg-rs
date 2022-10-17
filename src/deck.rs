@@ -13,10 +13,10 @@ pub struct Deck {
 }
 
 impl Deck {
-    pub fn new(file: &str) -> Self {
+    pub fn new(file: &str) -> Option<Self> {
         let mut parser = Parser::new(file.into());
 
-        let header = parser.parse_yaml();
+        let header = parser.parse_yaml()?;
         let graph = parser.parse_markdown();
 
         let cards = graph
@@ -24,10 +24,10 @@ impl Deck {
             .map(|index| Card::new(&graph, index))
             .collect();
 
-        Self {
+        Some(Self {
             name: header.cards_deck,
             cards,
-        }
+        })
     }
 
     pub fn combine(&mut self, other: Deck) {

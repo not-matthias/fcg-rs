@@ -68,7 +68,10 @@ fn main() {
         // Check if the file is a markdown file which can be converted
         if name.ends_with(".md") {
             let content = std::fs::read_to_string(entry.path()).unwrap();
-            let deck = Deck::new(&content);
+            let Some(deck) = Deck::new(&content) else {
+                log::warn!("Failed to create anki deck: {:?}", name);
+                continue;
+            };
 
             if decks.contains_key(&deck.name) {
                 decks.get_mut(&deck.name).unwrap().combine(deck);

@@ -12,14 +12,6 @@ pub struct FileHeader {
     pub cards_deck: String,
 }
 
-impl Default for FileHeader {
-    fn default() -> Self {
-        Self {
-            cards_deck: "default".into(),
-        }
-    }
-}
-
 /// The struct representing a markdown header with content.
 #[derive(Debug)]
 pub struct HeaderWithContent {
@@ -187,7 +179,7 @@ impl Parser {
         graph
     }
 
-    pub fn parse_yaml(&mut self) -> FileHeader {
+    pub fn parse_yaml(&mut self) -> Option<FileHeader> {
         // The only acceptable input is this:
         // ```
         // ---
@@ -210,9 +202,9 @@ impl Parser {
             .collect();
 
         if let Some(last_row) = minus_indices.last() {
-            serde_yaml::from_str(&self.text.lines().take(*last_row).join("\n")).unwrap_or_default()
+            serde_yaml::from_str(&self.text.lines().take(*last_row).join("\n")).ok()
         } else {
-            Default::default()
+            None
         }
     }
 }
