@@ -61,7 +61,7 @@ impl Card {
 
     /// Converts Obsidian Links (e.g. `[[Term]]`) into normal text (e.g. `Term`).
     fn convert_obsidian_links(text: String) -> String {
-        let result = OBSIDIAN_LINK.replace_all(&text, |caps: &Captures| (&caps[2]).to_string());
+        let result = OBSIDIAN_LINK.replace_all(&text, |caps: &Captures| (caps[2]).to_string());
 
         result.to_string()
     }
