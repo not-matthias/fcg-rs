@@ -192,6 +192,7 @@ impl Parser {
             .text
             .lines()
             .enumerate()
+            .take_while(|(_, line)| !line.contains('#') )
             .filter_map(|(index, line)| {
                 if line.contains("---") {
                     Some(index)
