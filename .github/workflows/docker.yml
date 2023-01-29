@@ -1,4 +1,4 @@
-name: daemon
+name: Docker Build and Push
 
 env:
   REGISTRY: ghcr.io
