@@ -3,3 +3,7 @@
 .idea/
 .history
 *.md
+# Devenv
+.devenv*
+devenv.local.nix
+
