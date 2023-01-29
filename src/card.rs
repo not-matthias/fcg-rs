@@ -183,8 +183,6 @@ mod tests {
             .to_string();
         let converted = Card::convert_math(input);
 
-        println!("{}", converted);
-
-        assert!(false);
+        insta::assert_display_snapshot!(converted);
     }
 }

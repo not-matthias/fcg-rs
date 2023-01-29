@@ -6,6 +6,7 @@ use deck::Deck;
 use structopt::StructOpt;
 use walkdir::WalkDir;
 
+pub mod error;
 pub mod card;
 pub mod deck;
 pub mod parser;
@@ -68,9 +69,12 @@ fn main() {
         // Check if the file is a markdown file which can be converted
         if name.ends_with(".md") {
             let content = std::fs::read_to_string(entry.path()).unwrap();
-            let Some(deck) = Deck::new(&content) else {
-                log::warn!("Failed to create anki deck: {:?}", name);
-                continue;
+            let deck = match Deck::new(&content) {
+                Ok(deck) => deck,
+                Err(error) => {
+                    log::warn!("Failed to create anki deck: {:?} ({:?})", name, error);
+                    continue;
+                }
             };
 
             if decks.contains_key(&deck.name) {

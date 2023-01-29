@@ -6,6 +6,7 @@ use std::{
 use crate::{card::Card, parser::Parser};
 use anki::{Field, Model, Note, Template};
 use genanki_rs as anki;
+use crate::error::FcgError;
 
 pub struct Deck {
     pub name: String,
@@ -13,10 +14,10 @@ pub struct Deck {
 }
 
 impl Deck {
-    pub fn new(file: &str) -> Option<Self> {
+    pub fn new(file: &str) -> Result<Self, FcgError> {
         let mut parser = Parser::new(file.into());
 
-        let header = parser.parse_yaml()?;
+        let header = parser.parse_yaml().ok_or(FcgError::ParseYaml)?;
         let graph = parser.parse_markdown();
 
         let cards = graph
@@ -24,7 +25,7 @@ impl Deck {
             .map(|index| Card::new(&graph, index))
             .collect();
 
-        Some(Self {
+        Ok(Self {
             name: header.cards_deck,
             cards,
         })
