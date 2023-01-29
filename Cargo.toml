@@ -4,21 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-genanki-rs = "0.3.0"
+genanki-rs = "0.3.1"
 log = "0.4.17"
 itertools = "0.10.5"
 petgraph = "0.6.2"
 structopt = "0.3.26"
-serde = { version = "1.0.145", features = ["derive"] }
-serde_yaml = "0.9.13"
-comrak = "0.14.0"
-regex = "1.6.0"
-env_logger = "0.9.1"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_yaml = "0.9.17"
+comrak = "0.16.0"
+regex = "1.7.1"
+env_logger = "0.10.0"
 lazy_static = "1.4.0"
-once_cell = { version = "1.15.0", features = ["unstable"] }
-image = "0.24.4"
-base64 = "0.13.0"
+once_cell = { version = "1.17.0", features = ["unstable"] }
+image = "0.24.5"
+base64 = "0.21.0"
 walkdir = "2.3.2"
 
 [dev-dependencies]
-insta = { version = "1.21.0", features = ["json", "yaml"] }
+insta = { version = "1.26.0", features = ["json", "yaml"] }

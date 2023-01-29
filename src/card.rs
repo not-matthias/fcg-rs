@@ -1,6 +1,8 @@
 use image::ImageOutputFormat;
 use std::io::Cursor;
 use std::path::PathBuf;
+use base64::Engine;
+use base64::engine::general_purpose;
 
 use crate::parser::CardGraph;
 use crate::RESOURCES_PATH;
@@ -55,7 +57,7 @@ impl Card {
         let mut cursor = Cursor::new(&mut data);
         image.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
 
-        let base64 = base64::encode(data);
+        let base64 = general_purpose::STANDARD_NO_PAD.encode(data);
         format!("<img src='data:image/png;base64,{}'>", base64)
     }
 

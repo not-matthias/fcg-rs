@@ -37,10 +37,10 @@ impl Deck {
 }
 
 impl Deck {
-    fn str_to_id(string: &str) -> usize {
+    fn str_to_id(string: &str) -> i64 {
         let mut hasher = DefaultHasher::new();
         string.hash(&mut hasher);
-        (hasher.finish() % u32::MAX as u64) as usize
+        (hasher.finish() % u32::MAX as u64) as i64
     }
 
     fn card_model(card: &Card) -> Model {
