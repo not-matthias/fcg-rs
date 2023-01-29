@@ -6,9 +6,9 @@ use deck::Deck;
 use structopt::StructOpt;
 use walkdir::WalkDir;
 
-pub mod error;
 pub mod card;
 pub mod deck;
+pub mod error;
 pub mod parser;
 
 pub static RESOURCES_PATH: OnceCell<PathBuf> = OnceCell::new();

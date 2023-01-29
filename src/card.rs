@@ -1,8 +1,8 @@
+use base64::engine::general_purpose;
+use base64::Engine;
 use image::ImageOutputFormat;
 use std::io::Cursor;
 use std::path::PathBuf;
-use base64::Engine;
-use base64::engine::general_purpose;
 
 use crate::parser::CardGraph;
 use crate::RESOURCES_PATH;

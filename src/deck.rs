@@ -3,10 +3,10 @@ use std::{
     hash::{Hash, Hasher},
 };
 
+use crate::error::FcgError;
 use crate::{card::Card, parser::Parser};
 use anki::{Field, Model, Note, Template};
 use genanki_rs as anki;
-use crate::error::FcgError;
 
 pub struct Deck {
     pub name: String,
