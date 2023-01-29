@@ -10,8 +10,6 @@ on:
     types: [completed]
     branches: [main]  
   push:
-    paths:
-      - '.github/workflows/docker.yml'
     branches: 
       - 'main'
   workflow_dispatch:
