@@ -90,7 +90,7 @@ fn main() {
     let output_dir: PathBuf = options.output_dir.unwrap_or_else(|| PathBuf::from("."));
 
     for (name, deck) in decks {
-        let output_file = output_dir.join(format!("{}.apkg", name));
+        let output_file = output_dir.join(format!("{name}.apkg"));
         deck.save(output_file.to_str().unwrap());
     }
 }

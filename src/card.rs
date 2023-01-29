@@ -58,7 +58,7 @@ impl Card {
         image.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
 
         let base64 = general_purpose::STANDARD_NO_PAD.encode(data);
-        format!("<img src='data:image/png;base64,{}'>", base64)
+        format!("<img src='data:image/png;base64,{base64}'>")
     }
 
     /// Converts Obsidian Links (e.g. `[[Term]]`) into normal text (e.g. `Term`).
@@ -111,7 +111,7 @@ impl Card {
         let front = if context.is_empty() {
             front
         } else {
-            format!("{} > {}", context, front)
+            format!("{context} > {front}")
         };
 
         let back = node.content.join("\n").trim().to_string();
